@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Senha{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <h2 class="mb-4">Editar Entrada de Senha</h2>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_entry', entry_id=entry.id) }}">
+                    <div class="mb-3">
+                        <label for="service" class="form-label">Serviço</label>
+                        <input type="text" class="form-control" id="service" name="service" value="{{ entry.service }}" required>
+                    </div>
+                     <div class="mb-3">
+                        <label for="url" class="form-label">URL do Site</label>
+                        <input type="url" class="form-control" id="url" name="url" value="{{ entry.url or '' }}" placeholder="https://www.site.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nome de Usuário / Email</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ entry.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Categoria</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">Selecione uma categoria...</option>
+                            <option value="Trabalho" {% if entry.category == 'Trabalho' %}selected{% endif %}>Trabalho</option>
+                            <option value="Pessoal" {% if entry.category == 'Pessoal' %}selected{% endif %}>Pessoal</option>
+                            <option value="Finanças" {% if entry.category == 'Finanças' %}selected{% endif %}>Finanças</option>
+                            <option value="Outros" {% if entry.category == 'Outros' %}selected{% endif %}>Outros</option>
+                        </select>
+                    </div>
+                    
+                    <hr class="my-4">
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" value="{{ decrypted_password }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="progress" style="height: 5px;">
+                            <div id="strength-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small id="strength-feedback" class="form-text text-muted"></small>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Script do medidor de força (sem alterações)
+document.addEventListener('DOMContentLoaded', function () {
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthFeedback = document.getElementById('strength-feedback');
+
+    checkPasswordStrength();
+
+    passwordInput.addEventListener('input', checkPasswordStrength);
+
+    function checkPasswordStrength() {
+        const password = passwordInput.value;
+        if (!password) {
+            updateStrengthUI(0, []);
+            return;
+        }
+
+        fetch("{{ url_for('password_strength_api') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateStrengthUI(data.score, data.feedback);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function updateStrengthUI(score, feedback) {
+        const colors = ['bg-danger', 'bg-danger', 'bg-warning', 'bg-info', 'bg-success'];
+        const widths = ['0%', '25%', '50%', '75%', '100%'];
+        
+        strengthBar.className = 'progress-bar ' + (colors[score] || 'bg-secondary');
+        strengthBar.style.width = widths[score] || '0%';
+        
+        if (Array.isArray(feedback) && feedback.length > 0) {
+            strengthFeedback.innerHTML = feedback.join('<br>');
+        } else {
+            strengthFeedback.innerHTML = '';
+        }
+    }
+});
+</script>
+{% endblock %}

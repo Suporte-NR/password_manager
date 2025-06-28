@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
+    <title>{% block title %}Gerenciador de Senhas{% endblock %}</title>
+
+    <style>
+        /* --- CSS para o Toggle Switch Dia/Noite --- */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            /* Ícone de sol (padrão dia) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='%23f5c32e' class='bi bi-sun-fill' viewBox='0 0 16 16'%3E%3Cpath d='M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        input:checked + .slider {
+            background-color: #343a40;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            /* Ícone de lua (modo noturno) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-moon-stars-fill' viewBox='0 0 16 16'%3E%3Cpath d='M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z'/%3E%3Cpath d='M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162h1.212a.217.217 0 0 1 .163.329l-.98 1.034.394 1.182a.217.217 0 0 1-.316.25l-1.055-.712-1.055.712a.217.217 0 0 1-.316-.25l.394-1.182-.98-1.034a.217.217 0 0 1 .163-.329h1.212l.387-1.162zM13.379 5.79c-.086.044-.114.145-.099.237l.254.684a.179.179 0 0 0 .258.118l.6-.266a.179.179 0 0 0 .118-.258l-.254-.684a.179.179 0 0 0-.237-.1l-.6.266a.179.179 0 0 0-.1.237zm.943-2.219a.179.179 0 0 0-.258.118l-.254.684a.179.179 0 0 0 .1.237l.6.266a.179.179 0 0 0 .237-.1l.254-.684a.179.179 0 0 0-.118-.258l-.6-.266zM13 2.25a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.5 0v-.5a.25.25 0 0 1 .25-.25z'/%3E%3C/svg%3E");
+        }
+        
+        /* --- Estilos do Modo Escuro --- */
+        body.dark-mode { background-color: #212529; color: #f8f9fa; /* Texto principal mais claro */ }
+        .dark-mode .card { background-color: #343a40; border-color: #495057; }
+        .dark-mode .table { color: #f8f9fa; /* Texto da tabela mais claro */ }
+        .dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * { --bs-table-accent-bg: rgba(255, 255, 255, 0.05); }
+        .dark-mode .form-control, .dark-mode .form-select { background-color: #495057; color: #f8f9fa; border-color: #6c757d; }
+        .dark-mode .form-control::placeholder { color: #adb5bd; }
+        .dark-mode .form-control:focus, .dark-mode .form-select:focus { background-color: #495057; color: #f8f9fa; border-color: #80bdff; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+        .dark-mode .modal-content { background-color: #343a40; }
+        .dark-mode .modal-header, .dark-mode .modal-footer { border-color: #495057; }
+        .dark-mode .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .dark-mode .btn-outline-secondary { color: #adb5bd; border-color: #6c757d; }
+        .dark-mode .btn-outline-secondary:hover { background-color: #6c757d; color: #fff; }
+        .dark-mode a { color: #8ab4f8; }
+        .dark-mode .alert-info { background-color: #0d6efd; color: #fff; border: none; }
+    </style>
+</head>
+<body>
+
+    <nav class="container d-flex justify-content-end pt-3">
+        <!-- NOVO TOGGLE SWITCH -->
+        <label class="theme-switch" title="Alternar tema">
+            <input type="checkbox" id="theme-switch-checkbox" />
+            <div class="slider"></div>
+        </label>
+    </nav>
+    
+    <div class="container mt-3">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            const themeSwitch = document.getElementById('theme-switch-checkbox');
+            const body = document.body;
+            
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                } else {
+                    body.classList.remove('dark-mode');
+                    themeSwitch.checked = false;
+                }
+            };
+
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            themeSwitch.addEventListener('change', () => {
+                const newTheme = themeSwitch.checked ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+                applyTheme(newTheme);
+            });
+        })();
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
